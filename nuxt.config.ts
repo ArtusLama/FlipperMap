@@ -26,9 +26,21 @@ export default defineNuxtConfig({
         plugins: [
             tailwindcss(),
         ],
+        server: {
+            allowedHosts: ["private.knoter.eu"],
+        },
     },
 
     colorMode: {
         classSuffix: "",
     },
+
+    nitro: {
+        rollupConfig: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
+    },
+
 })
