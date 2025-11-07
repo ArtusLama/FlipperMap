@@ -2,7 +2,7 @@
     <div class="space-y-2">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold">
-                Saved Locations ({{ coordinates.coordinates.value.length }})
+                Saved Locations ({{ coordinates.length }})
             </h3>
             <div class="flex gap-1">
                 <LocationDataManagerExportButton />
@@ -10,7 +10,7 @@
             </div>
         </div>
         <div
-            v-if="coordinates.coordinates.value.length === 0"
+            v-if="coordinates.length === 0"
             class="text-sm text-muted-foreground py-4"
         >
             No locations yet. Add one to get started!
@@ -20,15 +20,20 @@
             class="space-y-2 max-h-96 overflow-y-auto"
         >
             <div
-                v-for="coord in coordinates.coordinates.value"
+                v-for="coord in coordinates"
                 :key="coord.id"
                 class="flex items-center justify-between p-2 border rounded-lg hover:bg-accent/50 transition-colors"
             >
                 <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <div
-                        class="w-6 h-6 rounded-sm shrink-0"
-                        :style="{ backgroundColor: coord.color }"
-                    />
+                    <ColorPicker
+                        :initial-color="coord.color"
+                        @select="(color) => handleColorChange(coord.id, color)"
+                    >
+                        <div
+                            class="w-6 h-6 rounded-sm shrink-0 hover:ring-2 ring-ring transition-all cursor-pointer"
+                            :style="{ backgroundColor: coord.color }"
+                        />
+                    </ColorPicker>
                     <div class="flex-1 min-w-0">
                         <p
                             v-if="coord.name"
@@ -47,7 +52,7 @@
                         size="sm"
                         variant="outline"
                     >
-                        Delete
+                        <Icon name="lucide:trash-2" />
                     </UiButton>
                 </ConfirmationPopup>
             </div>
@@ -57,12 +62,20 @@
 
 <script setup lang="ts">
 import { toast } from "vue-sonner"
-import useCoordinates from "~/composables/useCoordinates"
+import { ColorPicker } from "~/components/ui/color-picker"
+import { storeToRefs } from "pinia"
+import { useCoordinatesStore } from "../stores/coordinates"
 
-const coordinates = useCoordinates()
+const coordinatesStore = useCoordinatesStore()
+const { coordinates } = storeToRefs(coordinatesStore)
 
 const handleDelete = (id: string) => {
-    coordinates.removeCoordinate(id)
+    coordinatesStore.removeCoordinate(id)
     toast.success("Location deleted")
+}
+
+const handleColorChange = (id: string, color: string) => {
+    coordinatesStore.updateCoordinate(id, { color })
+    toast.success("Color updated")
 }
 </script>

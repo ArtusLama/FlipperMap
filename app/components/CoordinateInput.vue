@@ -5,7 +5,7 @@
                 Add Location
             </h3>
             <p class="text-xs text-muted-foreground mt-1">
-                Right-click on the map to auto-fill coordinates
+                Left-click on the map to auto-fill coordinates
             </p>
         </div>
         <div class="space-y-3 max-w-md">
@@ -29,18 +29,14 @@
                 <label class="block text-sm font-medium mb-2">Latitude</label>
                 <UiInput
                     v-model.number="lat"
-                    type="number"
                     placeholder="e.g. 51.1657"
-                    step="0.0001"
                 />
             </div>
             <div>
                 <label class="block text-sm font-medium mb-2">Longitude</label>
                 <UiInput
                     v-model.number="lng"
-                    type="number"
                     placeholder="e.g. 10.4515"
-                    step="0.0001"
                 />
             </div>
             <div>
@@ -54,23 +50,18 @@
             <div>
                 <label class="block text-sm font-medium mb-2">Color</label>
                 <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        class="w-10 h-10 rounded-sm shrink-0 cursor-pointer transition-opacity hover:opacity-80"
+                    <div
+                        class="size-8 rounded-md border"
                         :style="{ backgroundColor: color }"
-                        @click="handleColorClick"
                     />
-                    <input
-                        ref="colorInput"
-                        v-model="color"
-                        type="color"
-                        class="hidden"
+                    <ColorPicker
+                        :initial-color="color"
+                        @select="color = $event"
                     >
-                    <UiInput
-                        v-model="color"
-                        type="text"
-                        placeholder="#3B82F6"
-                    />
+                        <UiButton variant="outline">
+                            Select Color
+                        </UiButton>
+                    </ColorPicker>
                 </div>
             </div>
         </div>
@@ -85,19 +76,17 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
+import { storeToRefs } from "pinia"
 import { toast } from "vue-sonner"
-import useLocationForm from "~/composables/useLocationForm"
+import { ColorPicker } from "~/components/ui/color-picker"
+import { useCoordinatesStore } from "../stores/coordinates"
+import { useLocationFormStore } from "../stores/locationForm"
 
-const coordinates = useCoordinates()
-const locationForm = useLocationForm()
+const coordinatesStore = useCoordinatesStore()
+const locationFormStore = useLocationFormStore()
+const { address, lat, lng, name, color } = storeToRefs(locationFormStore)
 
-const { address, lat, lng, name, color } = locationForm
-const colorInput = ref<HTMLInputElement>()
 const isGeocoding = ref(false)
-
-const handleColorClick = () => {
-    colorInput.value?.click()
-}
 
 const handleGeocode = async () => {
     if (!address.value.trim()) {
@@ -120,11 +109,17 @@ const handleGeocode = async () => {
         }
 
         const result = results[0]
-        lat.value = parseFloat(result.lat)
-        lng.value = parseFloat(result.lon)
-        name.value = result.display_name || address.value
+        const newLat = parseFloat(result.lat)
+        const newLng = parseFloat(result.lon)
 
-        toast.success("Address found!")
+        if (!isNaN(newLat) && !isNaN(newLng)) {
+            lat.value = newLat
+            lng.value = newLng
+            name.value = result.display_name || address.value
+            toast.success("Address found!")
+        } else {
+            toast.error("Invalid coordinates received")
+        }
     } catch (error) {
         toast.error("Failed to geocode address")
         console.error(error)
@@ -135,19 +130,16 @@ const handleGeocode = async () => {
 
 const handleAdd = () => {
     try {
-        const latNum = Number(lat.value)
-        const lngNum = Number(lng.value)
-
-        if (!lat.value || !lng.value || isNaN(latNum) || isNaN(lngNum)) {
+        if (!lat.value || !lng.value) {
             toast.error("Please enter both latitude and longitude")
             return
         }
 
-        coordinates.addCoordinate(latNum, lngNum, name.value || undefined, color.value)
+        coordinatesStore.addCoordinate(lat.value, lng.value, name.value || undefined, color.value)
         toast.success("Location added successfully")
 
         // Reset form
-        locationForm.resetForm()
+        locationFormStore.resetForm()
     } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to add location"
         toast.error(message)

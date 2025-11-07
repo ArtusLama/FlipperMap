@@ -26,12 +26,12 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { toast } from "vue-sonner"
-import useCoordinates from "~/composables/useCoordinates"
+import { useCoordinatesStore } from "~/stores/coordinates"
 
+const coordinatesStore = useCoordinatesStore()
 const fileInput = ref<HTMLInputElement>()
 const importModePopup = ref()
 const selectedMode = ref<"replace" | "add" | null>(null)
-const { importCoordinates } = useCoordinates()
 
 const handleImportClick = () => {
     importModePopup.value.open()
@@ -63,7 +63,7 @@ const handleFileSelect = async (event: Event) => {
 }
 
 const performImport = (jsonData: string, mode: "replace" | "add") => {
-    const result = importCoordinates(jsonData, mode)
+    const result = coordinatesStore.importCoordinates(jsonData, mode)
 
     if (result.success) {
         toast.success("Import successful", {

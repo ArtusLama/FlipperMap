@@ -1,81 +1,64 @@
 <template>
-    <!-- Area polygons rendered on the map -->
-    <!-- Each area is a closed polygon with outline only -->
-    <LPolygon
-        v-for="area in areas"
-        :key="area.id"
-        :lat-lngs="(area.vertices as any)"
-        :fill="false"
-        :color="'#ffffff'"
-        :weight="2"
-        :opacity="0.8"
-        :interactive="false"
-    />
+    <div>
+        <!-- Area polygons rendered on the map -->
+        <LPolygon
+            v-for="area in areas"
+            :key="area.id"
+            :lat-lngs="area.vertices"
+            :fill="false"
+            :color="area.color"
+            :weight="2"
+            :opacity="0.8"
+            :interactive="false"
+        />
+
+        <!-- Area management interface -->
+        <div class="space-y-4 mt-4">
+            <h3 class="text-lg font-semibold">
+                Sub-Areas
+            </h3>
+            <div class="grid gap-3">
+                <div
+                    v-for="area in areas"
+                    :key="area.id"
+                    class="flex items-center gap-2"
+                >
+                    <ColorPicker
+                        :initial-color="area.color"
+                        @select="(color) => handleColorChange(area.id, color)"
+                    >
+                        <div
+                            class="w-8 h-8 rounded-md border hover:ring-2 ring-ring transition-all cursor-pointer"
+                            :style="{ backgroundColor: area.color }"
+                        />
+                    </ColorPicker>
+                    <span class="text-sm font-medium">{{ area.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { LatLng } from "leaflet"
+import { ref } from "vue"
+import type { LatLng } from "leaflet"
+import { ColorPicker } from "~/components/ui/color-picker"
 
-// Area polygons - subdividing the main region into 4 areas
-// Each area has 8 vertices forming a rounded shape
+interface Area {
+    id: number
+    name: string
+    vertices: LatLng[]
+    color: string
+}
 
-// Northeast area (circular with 8 points)
-const areaOne: LatLng[] = [
-    new LatLng(50.83, 13.565),
-    new LatLng(50.835, 13.60),
-    new LatLng(50.83, 13.635),
-    new LatLng(50.795, 13.64),
-    new LatLng(50.76, 13.635),
-    new LatLng(50.755, 13.60),
-    new LatLng(50.76, 13.565),
-    new LatLng(50.795, 13.56),
-    new LatLng(50.83, 13.565),
-]
+// Empty areas array for dynamic area management
+const areas = ref<Area[]>([])
 
-// Northwest area (circular with 8 points)
-const areaTwo: LatLng[] = [
-    new LatLng(50.83, 13.46),
-    new LatLng(50.835, 13.495),
-    new LatLng(50.83, 13.53),
-    new LatLng(50.795, 13.54),
-    new LatLng(50.76, 13.53),
-    new LatLng(50.755, 13.495),
-    new LatLng(50.76, 13.46),
-    new LatLng(50.795, 13.45),
-    new LatLng(50.83, 13.46),
-]
-
-// Southeast area (circular with 8 points)
-const areaThree: LatLng[] = [
-    new LatLng(50.725, 13.565),
-    new LatLng(50.73, 13.60),
-    new LatLng(50.725, 13.635),
-    new LatLng(50.69, 13.64),
-    new LatLng(50.655, 13.635),
-    new LatLng(50.65, 13.60),
-    new LatLng(50.655, 13.565),
-    new LatLng(50.69, 13.56),
-    new LatLng(50.725, 13.565),
-]
-
-// Southwest area (circular with 8 points)
-const areaFour: LatLng[] = [
-    new LatLng(50.725, 13.46),
-    new LatLng(50.73, 13.495),
-    new LatLng(50.725, 13.53),
-    new LatLng(50.69, 13.54),
-    new LatLng(50.655, 13.53),
-    new LatLng(50.65, 13.495),
-    new LatLng(50.655, 13.46),
-    new LatLng(50.69, 13.45),
-    new LatLng(50.725, 13.46),
-]
-
-// Area metadata for management
-const areas = [
-    { id: 1, name: "Northeast", vertices: areaOne },
-    { id: 2, name: "Northwest", vertices: areaTwo },
-    { id: 3, name: "Southeast", vertices: areaThree },
-    { id: 4, name: "Southwest", vertices: areaFour },
-]
+// Handler for color changes
+const handleColorChange = (id: number, color: string) => {
+    const area = areas.value.find(a => a.id === id)
+    if (area) {
+        area.color = color
+    }
+}
 </script>

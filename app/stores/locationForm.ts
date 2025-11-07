@@ -1,11 +1,10 @@
+import { defineStore } from "pinia"
 import { ref } from "vue"
 
-let formInstance: ReturnType<typeof createLocationForm> | null = null
-
-function createLocationForm() {
+export const useLocationFormStore = defineStore("locationForm", () => {
     const address = ref("")
-    const lat = ref<number | string>("")
-    const lng = ref<number | string>("")
+    const lat = ref<number | null>(null)
+    const lng = ref<number | null>(null)
     const name = ref("")
     const color = ref("#3B82F6")
 
@@ -23,8 +22,8 @@ function createLocationForm() {
 
     const resetForm = () => {
         address.value = ""
-        lat.value = ""
-        lng.value = ""
+        lat.value = null
+        lng.value = null
         name.value = ""
         color.value = "#3B82F6"
     }
@@ -38,11 +37,4 @@ function createLocationForm() {
         fillForm,
         resetForm,
     }
-}
-
-export default function useLocationForm() {
-    if (!formInstance) {
-        formInstance = createLocationForm()
-    }
-    return formInstance
-}
+})

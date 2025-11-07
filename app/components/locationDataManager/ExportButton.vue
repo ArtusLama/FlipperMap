@@ -14,13 +14,13 @@
 
 <script setup lang="ts">
 import { toast } from "vue-sonner"
-import useCoordinates from "~/composables/useCoordinates"
+import { useCoordinatesStore } from "~/stores/coordinates"
 
-const { exportCoordinates } = useCoordinates()
+const coordinatesStore = useCoordinatesStore()
 
 const handleExport = async () => {
     try {
-        const jsonData = exportCoordinates()
+        const jsonData = coordinatesStore.exportCoordinates()
 
         // Create blob and trigger download with save dialog
         const blob = new Blob([jsonData], { type: "application/json" })

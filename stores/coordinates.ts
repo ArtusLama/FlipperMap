@@ -1,3 +1,4 @@
+import { defineStore } from "pinia"
 import { useStorage } from "@vueuse/core"
 import { z } from "zod"
 
@@ -12,10 +13,8 @@ const CoordinateSchema = z.object({
 
 export type Coordinate = z.infer<typeof CoordinateSchema>
 
-const STORAGE_KEY = "flippermap_coordinates"
-
-export default function useCoordinates() {
-    const coordinates = useStorage<Coordinate[]>(STORAGE_KEY, [])
+export const useCoordinatesStore = defineStore("coordinates", () => {
+    const coordinates = useStorage<Coordinate[]>("flippermap_coordinates", [])
 
     // Add a new coordinate
     const addCoordinate = (lat: number, lng: number, name?: string, color?: string) => {
@@ -45,9 +44,6 @@ export default function useCoordinates() {
         coordinates.value = []
     }
 
-    // Get all coordinates
-    const getAll = () => coordinates.value
-
     // Update a coordinate
     const updateCoordinate = (id: string, updates: Partial<Omit<Coordinate, "id" | "createdAt">>) => {
         const coordinate = coordinates.value.find(c => c.id === id)
@@ -68,7 +64,7 @@ export default function useCoordinates() {
         return JSON.stringify(coordinates.value, null, 2)
     }
 
-    // Validate and import coordinates (replace mode)
+    // Import coordinates
     const importCoordinates = (jsonData: string, mode: "replace" | "add" = "replace") => {
         try {
             const parsed = JSON.parse(jsonData)
@@ -100,9 +96,8 @@ export default function useCoordinates() {
         addCoordinate,
         removeCoordinate,
         clearAll,
-        getAll,
         updateCoordinate,
         exportCoordinates,
         importCoordinates,
     }
-}
+})
