@@ -1,7 +1,7 @@
 <template>
-    <div class="border rounded-xl p-4 relative z-0">
+    <div class="border p-4 rounded-lg relative z-0">
         <LMap
-            class="w-full h-full rounded-md"
+            class="rounded-md w-full h-full"
             :zoom="12"
             :min-zoom="12"
             :center="[50.90473937988281, 13.672101020812988]"
