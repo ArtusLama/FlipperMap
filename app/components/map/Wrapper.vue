@@ -105,9 +105,7 @@ const handleMapRightClick = (event: { latlng: { lat: number, lng: number } }) =>
     if (editingArea) {
         subAreas.addPoint(editingArea.id, point)
         toast.info(`Point added to sub-area: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
-    }
-    // If we're editing the main area and not a sub-area
-    else if (isEditing.value) {
+    } else if (isEditing.value) {
         areaEditor.addPoint(point)
         toast.info(`Point added to main area: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
     }

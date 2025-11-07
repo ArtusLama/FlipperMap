@@ -130,7 +130,7 @@ const handleGeocode = async () => {
 
 const handleAdd = () => {
     try {
-        if (!lat.value || !lng.value) {
+        if (typeof lat.value === "undefined" || typeof lng.value === "undefined") {
             toast.error("Please enter both latitude and longitude")
             return
         }

@@ -3,8 +3,8 @@ import { ref } from "vue"
 
 export const useLocationFormStore = defineStore("locationForm", () => {
     const address = ref("")
-    const lat = ref<number | null>(null)
-    const lng = ref<number | null>(null)
+    const lat = ref<number | undefined>(undefined)
+    const lng = ref<number | undefined>(undefined)
     const name = ref("")
     const color = ref("#3B82F6")
 
@@ -22,8 +22,8 @@ export const useLocationFormStore = defineStore("locationForm", () => {
 
     const resetForm = () => {
         address.value = ""
-        lat.value = null
-        lng.value = null
+        lat.value = undefined
+        lng.value = undefined
         name.value = ""
         color.value = "#3B82F6"
     }
