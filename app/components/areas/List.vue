@@ -2,8 +2,8 @@
     <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
-                <h3 class="text-sm font-medium">
-                    Sub Areas
+                <h3 class="text-lg font-semibold">
+                    Sub Areas ({{ subAreas.areas.length }})
                 </h3>
                 <UiButton
                     v-if="!hasEditingArea"
@@ -25,13 +25,18 @@
                     v-for="area in subAreas.areas"
                     :key="area.id"
                     class="flex items-center justify-between p-2 rounded-md border"
-                    :class="{ 'bg-accent': area.isEditing }"
+                    :class="{ 'bg-red-400/10 border-red-400/25 animate-pulse': area.isEditing }"
                 >
                     <div class="flex items-center gap-2">
-                        <div
-                            class="size-3 rounded-full"
-                            :style="{ backgroundColor: area.color }"
-                        />
+                        <ColorPicker
+                            :initial-color="area.color"
+                            @select="(color) => handleColorChange(area.id, color)"
+                        >
+                            <div
+                                class="size-6 aspect-square rounded-sm cursor-pointer hover:ring-2 ring-ring transition-all"
+                                :style="{ backgroundColor: area.color }"
+                            />
+                        </ColorPicker>
                         <span class="text-sm">
                             {{ area.points.length }} points
                         </span>
@@ -40,8 +45,9 @@
                         <!-- Done Button (only shows during initial creation) -->
                         <UiButton
                             v-if="area.isEditing"
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
+                            class="hover:bg-green-400/25!"
                             @click="handleFinishEditing(area.id)"
                         >
                             <Icon
@@ -55,13 +61,11 @@
                             @confirm="subAreas.deleteArea(area.id)"
                         >
                             <UiButton
-                                variant="ghost"
+                                class="ml-2 h-8 px-2 hover:bg-red-500/25!"
                                 size="sm"
+                                variant="outline"
                             >
-                                <Icon
-                                    name="lucide:trash-2"
-                                    class="size-4"
-                                />
+                                <Icon name="lucide:trash-2" />
                             </UiButton>
                         </ConfirmationPopup>
                     </div>
@@ -89,8 +93,15 @@ import { computed } from "vue"
 import { toast } from "vue-sonner"
 import { getRandomColor } from "~/lib/utils"
 import { useSubAreasStore } from "~/stores/subAreas"
+import { ColorPicker } from "~/components/ui/color-picker"
 
 const subAreas = useSubAreasStore()
+
+// Function to handle color changes
+function handleColorChange(id: string, color: string) {
+    subAreas.updateAreaColor(id, color)
+    toast.success("Color updated")
+}
 
 // Computed property to check if any area is being edited
 const hasEditingArea = computed(() => subAreas.areas.some(area => area.isEditing))
