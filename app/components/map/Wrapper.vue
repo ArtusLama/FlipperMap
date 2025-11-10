@@ -2,13 +2,9 @@
     <div class="border p-4 rounded-lg relative z-0">
         <LMap
             class="rounded-md w-full h-full"
-            :zoom="12"
-            :min-zoom="12"
-            :center="[50.90473937988281, 13.672101020812988]"
-            :max-bounds="[
-                [50.71377944946289, 13.429581642150879],
-                [50.9613971, 13.8799701],
-            ]"
+            :center="[51.0647, 12.0128]"
+            :max-bounds="maxBounds"
+            :zoom="5"
             :use-global-leaflet="false"
             @click="handleMapClick"
             @contextmenu="handleMapRightClick"
@@ -22,9 +18,10 @@
                 class="z-10"
             />
             <!-- Vignette overlay - darkens everything outside the bounds -->
+            <!-- @vue-ignore -->
             <LPolygon
                 v-if="vignettePolygon.length > 0"
-                :lat-lngs="vignettePolygon as any"
+                :lat-lngs="vignettePolygon"
                 :fill="true"
                 :fill-color="'#000000'"
                 :fill-opacity="0.5"
@@ -88,6 +85,30 @@ const { coordinates } = storeToRefs(coordinatesStore)
 const areaEditor = useAreaEditorStore()
 const subAreas = useSubAreasStore()
 const { isEditing, vignettePolygon } = storeToRefs(areaEditor)
+
+const MAX_BOUNDS_PADDING_RATIO = 0.1 // 10% padding
+const maxBounds = computed<[[number, number], [number, number]] | undefined>(() => {
+    if (areaEditor.isEditing || !(areaEditor.areaPoints.length > 0)) {
+        return undefined
+    }
+    const points = areaEditor.areaPoints
+    const lats = points.map(p => p.lat)
+    const lngs = points.map(p => p.lng)
+
+    const minLat = Math.min(...lats)
+    const maxLat = Math.max(...lats)
+
+    const minLng = Math.min(...lngs)
+    const maxLng = Math.max(...lngs)
+
+    const latPadding = (maxLat - minLat) * MAX_BOUNDS_PADDING_RATIO
+    const lngPadding = (maxLng - minLng) * MAX_BOUNDS_PADDING_RATIO
+
+    return [
+        [minLat - latPadding, minLng - lngPadding],
+        [maxLat + latPadding, maxLng + lngPadding],
+    ]
+})
 
 const handleMapMouseMove = (event: { latlng: { lat: number, lng: number } }) => {
     const { latlng } = event
