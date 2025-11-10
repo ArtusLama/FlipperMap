@@ -9,7 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NUXT_APP_BASE_URL: ${{ github.event.repository.name }}
+      # Set base URL to the repo name with surrounding slashes for GitHub Pages
+      NUXT_APP_BASE_URL: '/${{ github.event.repository.name }}/'
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
