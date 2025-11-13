@@ -18,7 +18,7 @@ interface SerializedPoint {
     lng: number
 }
 
-interface SerializedSubArea extends Omit<SubArea, 'points'> {
+interface SerializedSubArea extends Omit<SubArea, "points"> {
     points: SerializedPoint[]
 }
 
@@ -33,14 +33,14 @@ function deserializeLatLng(point: SerializedPoint): LatLng {
 function serializeArea(area: SubArea): SerializedSubArea {
     return {
         ...area,
-        points: area.points.map(p => serializeLatLng(p))
+        points: area.points.map(p => serializeLatLng(p)),
     }
 }
 
 function deserializeArea(area: SerializedSubArea): SubArea {
     return {
         ...area,
-        points: area.points.map(p => deserializeLatLng(p))
+        points: area.points.map(p => deserializeLatLng(p)),
     }
 }
 
@@ -51,18 +51,18 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
 
     // Persistent state with serialization
     const serializedAreas = useStorage<SerializedSubArea[]>(STORAGE_KEY, [])
-    
+
     // Computed property to handle serialization/deserialization
     const areas = computed({
         get: () => serializedAreas.value.map(deserializeArea),
         set: (newAreas: SubArea[]) => {
             serializedAreas.value = newAreas.map(serializeArea)
-        }
+        },
     })
 
     // Getters
     const getAreaById = computed(() => (id: string) =>
-        areas.value.find(area => area.id === id)
+        areas.value.find(area => area.id === id),
     )
 
     const getPreviewPoints = computed(() => (areaId: string) => {
@@ -101,18 +101,18 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     }
 
     function updateArea(id: string, updates: Partial<Omit<SubArea, "id">>) {
-        areas.value = areas.value.map(area => 
-            area.id === id ? { ...area, ...updates } : area
+        areas.value = areas.value.map(area =>
+            area.id === id ? { ...area, ...updates } : area,
         )
         lastUpdated.value = Date.now()
     }
 
     function addPoint(areaId: string, point: LatLng) {
-        areas.value = areas.value.map(area => {
+        areas.value = areas.value.map((area) => {
             if (area.id === areaId) {
                 return {
                     ...area,
-                    points: [...area.points, point]
+                    points: [...area.points, point],
                 }
             }
             return area
@@ -121,13 +121,13 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     }
 
     function removePoint(areaId: string, index: number) {
-        areas.value = areas.value.map(area => {
+        areas.value = areas.value.map((area) => {
             if (area.id === areaId) {
                 const newPoints = [...area.points]
                 newPoints.splice(index, 1)
                 return {
                     ...area,
-                    points: newPoints
+                    points: newPoints,
                 }
             }
             return area
@@ -138,13 +138,13 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     function startEditing(id: string) {
         areas.value = areas.value.map(area => ({
             ...area,
-            isEditing: area.id === id
+            isEditing: area.id === id,
         }))
         lastUpdated.value = Date.now()
     }
 
     function stopEditing(id: string) {
-        areas.value = areas.value.map(area => {
+        areas.value = areas.value.map((area) => {
             if (area.id === id) {
                 return { ...area, isEditing: false }
             }
@@ -156,13 +156,13 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     function stopEditingAll() {
         areas.value = areas.value.map(area => ({
             ...area,
-            isEditing: false
+            isEditing: false,
         }))
         lastUpdated.value = Date.now()
     }
 
     function updateAreaColor(id: string, color: string) {
-        areas.value = areas.value.map(area => {
+        areas.value = areas.value.map((area) => {
             if (area.id === id) {
                 return { ...area, color }
             }
