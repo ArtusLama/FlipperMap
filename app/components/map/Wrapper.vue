@@ -125,10 +125,10 @@ const handleMapRightClick = (event: { latlng: { lat: number, lng: number } }) =>
     const editingArea = subAreas.areas.find(area => area.isEditing)
     if (editingArea) {
         subAreas.addPoint(editingArea.id, point)
-        toast.info(`Point added to sub-area: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        toast.info(`Point added to sub-area: ${lat.toFixed(10)}, ${lng.toFixed(10)}`)
     } else if (isEditing.value) {
         areaEditor.addPoint(point)
-        toast.info(`Point added to main area: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        toast.info(`Point added to main area: ${lat.toFixed(10)}, ${lng.toFixed(10)}`)
     }
 }
 
@@ -140,7 +140,7 @@ const handleMapClick = (event: { latlng: { lat: number, lng: number } }) => {
     const isEditingSubArea = subAreas.areas.some(area => area.isEditing)
     if (!isEditingSubArea && !isEditing.value) {
         locationFormStore.fillForm(lat, lng)
-        toast.success(`Coordinates filled: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+        toast.success(`Coordinates filled: ${lat.toFixed(10)}, ${lng.toFixed(10)}`)
     }
 }
 </script>

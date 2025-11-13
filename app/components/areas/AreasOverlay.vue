@@ -23,8 +23,9 @@
                 :weight="2"
                 :opacity="0.8"
             />
-            <!-- Preview line for next point -->
+            <!-- Preview dashed line for next point - show only when there's at least one placed point -->
             <LPolyline
+                v-if="area.points.length > 0"
                 :lat-lngs="getPreviewPoints(area.id)"
                 :color="area.color"
                 :weight="2"

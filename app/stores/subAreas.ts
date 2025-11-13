@@ -9,6 +9,7 @@ export interface SubArea {
     color: string
     points: LatLng[]
     isEditing: boolean
+    isDraft?: boolean
 }
 
 const STORAGE_KEY = "flippermap_subareas"
@@ -18,7 +19,7 @@ interface SerializedPoint {
     lng: number
 }
 
-interface SerializedSubArea extends Omit<SubArea, "points"> {
+interface SerializedSubArea extends Omit<SubArea, "points" | "isDraft"> {
     points: SerializedPoint[]
 }
 
@@ -31,8 +32,12 @@ function deserializeLatLng(point: SerializedPoint): LatLng {
 }
 
 function serializeArea(area: SubArea): SerializedSubArea {
+    // Build persisted area without runtime-only flags (isDraft)
     return {
-        ...area,
+        id: area.id,
+        name: area.name,
+        color: area.color,
+        isEditing: area.isEditing,
         points: area.points.map(p => serializeLatLng(p)),
     }
 }
@@ -41,6 +46,7 @@ function deserializeArea(area: SerializedSubArea): SubArea {
     return {
         ...area,
         points: area.points.map(p => deserializeLatLng(p)),
+        isDraft: false,
     }
 }
 
@@ -48,6 +54,8 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     // State - use ref for runtime values that shouldn't be persisted
     const lastUpdated = ref(Date.now())
     const mousePosition = ref<LatLng | null>(null)
+    // Track draft (temporary) area ids at runtime only (not persisted)
+    const draftIds = ref<string[]>([])
 
     // Persistent state with serialization
     const serializedAreas = useStorage<SerializedSubArea[]>(STORAGE_KEY, [])
@@ -90,13 +98,38 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
             color,
             points: [],
             isEditing: false,
+            isDraft: false,
         }
         areas.value = [...areas.value, newArea]
         return newArea
     }
 
+    // Helper: choose next free single-letter name (A..Z). If all used, fall back to numbered name.
+    function getNextLetterName() {
+        // Collect used single letters from existing area names.
+        // Accept names like 'A' or 'Area A' (case-insensitive), otherwise ignore.
+        const usedLetters = new Set<string>()
+        areas.value.forEach((a) => {
+            const name = (a.name || "").toString().trim()
+            const m = name.match(/(?:Area\s+)?([A-Z])$/i)
+            if (m && m[1]) usedLetters.add(m[1].toUpperCase())
+        })
+
+        const A_CODE = "A".charCodeAt(0)
+        const Z_CODE = "Z".charCodeAt(0)
+        for (let i = A_CODE; i <= Z_CODE; i++) {
+            const letter = String.fromCharCode(i)
+            if (!usedLetters.has(letter)) return `Area ${letter}`
+        }
+
+        // fallback to numbered name if all letters are used
+        return `Area ${areas.value.length + 1}`
+    }
+
     function deleteArea(id: string) {
         areas.value = areas.value.filter(area => area.id !== id)
+        // also clear any draft marker
+        draftIds.value = draftIds.value.filter(d => d !== id)
         lastUpdated.value = Date.now()
     }
 
@@ -146,6 +179,9 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     function stopEditing(id: string) {
         areas.value = areas.value.map((area) => {
             if (area.id === id) {
+                // clear editing and draft flags when editing stops (finalize creation)
+                // finalize: clear editing and remove draft marker
+                draftIds.value = draftIds.value.filter(d => d !== id)
                 return { ...area, isEditing: false }
             }
             return area
@@ -172,10 +208,16 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
     }
 
     function startNewArea(color: string) {
-        const areaName = `Area ${areas.value.length + 1}`
+        const areaName = getNextLetterName()
         const newArea = createArea(areaName, color)
+        // mark as draft (runtime only) so UI can distinguish and allow cancel
+        draftIds.value.push(newArea.id)
         startEditing(newArea.id)
         return newArea
+    }
+
+    function isDraft(id: string) {
+        return draftIds.value.includes(id)
     }
 
     function updateMousePosition(position: LatLng | null) {
@@ -186,6 +228,7 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
         // State
         areas,
         lastUpdated,
+        // runtime draft helpers (exported below in actions section)
 
         // Getters
         getAreaById,
@@ -202,6 +245,7 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
         stopEditingAll,
         updateAreaColor,
         startNewArea,
+        isDraft,
         updateMousePosition,
     }
 })

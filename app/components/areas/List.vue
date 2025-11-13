@@ -3,26 +3,26 @@
         <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold">
-                    Sub Areas ({{ subAreas.areas.length }})
+                    Sub Areas ({{ areas.length }})
                 </h3>
                 <UiButton
-                    v-if="!hasEditingArea"
+                    v-if="!hasEditingArea || isCreating"
                     variant="outline"
                     size="sm"
-                    @click="handleNewArea"
+                    @click="isCreating ? handleCancelNewArea() : handleNewArea()"
                 >
                     <Icon
-                        name="lucide:plus"
+                        :name="isCreating ? 'lucide:x' : 'lucide:plus'"
                         class="size-4"
                     />
                 </UiButton>
             </div>
             <div
-                v-if="subAreas.areas.length > 0"
+                v-if="areas.length > 0"
                 class="flex flex-col gap-1 max-h-96 overflow-y-auto"
             >
                 <div
-                    v-for="area in subAreas.areas"
+                    v-for="area in areas"
                     :key="area.id"
                     class="flex items-center justify-between p-2 rounded-md border"
                     :class="{ 'bg-red-400/10 border-red-400/25 animate-pulse': area.isEditing }"
@@ -38,7 +38,13 @@
                             />
                         </ColorPicker>
                         <span class="text-sm">
-                            {{ area.points.length }} points
+                            <!-- show dynamic points count while editing, otherwise show the area's name (letter) -->
+                            <template v-if="area.isEditing">
+                                {{ area.points.length }} points
+                            </template>
+                            <template v-else>
+                                {{ area.name }}
+                            </template>
                         </span>
                     </div>
                     <div class="flex gap-2">
@@ -96,6 +102,7 @@ import { useSubAreasStore } from "~/stores/subAreas"
 import { ColorPicker } from "~/components/ui/color-picker"
 
 const subAreas = useSubAreasStore()
+const { areas } = storeToRefs(subAreas)
 
 // Function to handle color changes
 function handleColorChange(id: string, color: string) {
@@ -104,7 +111,18 @@ function handleColorChange(id: string, color: string) {
 }
 
 // Computed property to check if any area is being edited
-const hasEditingArea = computed(() => subAreas.areas.some(area => area.isEditing))
+const hasEditingArea = computed(() => areas.value.some(area => area.isEditing))
+
+// Computed: true when a newly-created area is currently being edited
+const isCreating = computed(() => areas.value.some(area => subAreas.isDraft(area.id) && area.isEditing))
+
+// Cancel creation of the new area (remove it)
+function handleCancelNewArea() {
+    const creating = areas.value.find(a => subAreas.isDraft(a.id) && a.isEditing)
+    if (!creating) return
+    subAreas.deleteArea(creating.id)
+    toast.success("Area creation cancelled")
+}
 
 // Function to start creating a new area
 function handleNewArea() {
@@ -116,7 +134,7 @@ function handleNewArea() {
 
 // Function to finish creating an area
 function handleFinishEditing(id: string) {
-    const area = subAreas.areas.find(a => a.id === id)
+    const area = areas.value.find(a => a.id === id)
     if (!area) return
 
     if (area.points.length < 3) {
