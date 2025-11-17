@@ -8,6 +8,7 @@ const CoordinateSchema = z.object({
     lng: z.number().min(-180).max(180),
     name: z.string().optional(),
     color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
+    locationType: z.enum(["Pflegeheim", "Krankenhaus", "Rettungswache", "Arztpraxis"]).optional(),
     createdAt: z.number(),
 })
 
@@ -17,13 +18,14 @@ export const useCoordinatesStore = defineStore("coordinates", () => {
     const coordinates = useStorage<Coordinate[]>("flippermap_coordinates", [])
 
     // Add a new coordinate
-    const addCoordinate = (lat: number, lng: number, name?: string, color?: string) => {
+    const addCoordinate = (lat: number, lng: number, name?: string, color?: string, locationType?: string) => {
         const newCoordinate = CoordinateSchema.parse({
             id: `coord_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             lat,
             lng,
             name: name || `Location ${coordinates.value.length + 1}`,
             color: color || "#3B82F6",
+            locationType,
             createdAt: Date.now(),
         })
 
@@ -54,6 +56,7 @@ export const useCoordinatesStore = defineStore("coordinates", () => {
                 ...(updates.lng !== undefined && { lng: updates.lng }),
                 ...(updates.name !== undefined && { name: updates.name }),
                 ...(updates.color !== undefined && { color: updates.color }),
+                ...(updates.locationType !== undefined && { locationType: updates.locationType }),
             })
             Object.assign(coordinate, updated)
         }

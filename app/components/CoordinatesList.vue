@@ -35,12 +35,24 @@
                         />
                     </ColorPicker>
                     <div class="flex-1 min-w-0">
-                        <p
-                            v-if="coord.name"
-                            class="font-medium text-sm truncate"
-                        >
-                            {{ coord.name }}
-                        </p>
+                        <div class="flex items-center gap-2">
+                            <p
+                                v-if="coord.name"
+                                class="font-medium text-sm truncate"
+                            >
+                                {{ coord.name }}
+                            </p>
+                            <div
+                                v-if="coord.locationType"
+                                class="flex items-center gap-1 text-xs text-muted-foreground"
+                            >
+                                <Icon
+                                    :name="getCategoryIcon(coord.locationType)"
+                                    class="size-3"
+                                />
+                                <span>{{ coord.locationType }}</span>
+                            </div>
+                        </div>
                         <p class="text-xs text-muted-foreground">
                             {{ coord.lat.toFixed(4) }}, {{ coord.lng.toFixed(4) }}
                         </p>
@@ -65,6 +77,7 @@ import { toast } from "vue-sonner"
 import { ColorPicker } from "~/components/ui/color-picker"
 import { storeToRefs } from "pinia"
 import { useCoordinatesStore } from "../stores/coordinates"
+import type { LocationType } from "../../types"
 
 const coordinatesStore = useCoordinatesStore()
 const { coordinates } = storeToRefs(coordinatesStore)
@@ -77,5 +90,15 @@ const handleDelete = (id: string) => {
 const handleColorChange = (id: string, color: string) => {
     coordinatesStore.updateCoordinate(id, { color })
     toast.success("Farbe aktualisiert")
+}
+
+const getCategoryIcon = (locationType: LocationType): string => {
+    const icons: Record<LocationType, string> = {
+        Pflegeheim: "lucide:users",
+        Krankenhaus: "lucide:hospital",
+        Rettungswache: "lucide:ambulance",
+        Arztpraxis: "lucide:briefcase-medical",
+    }
+    return icons[locationType] || "lucide:map-pin"
 }
 </script>

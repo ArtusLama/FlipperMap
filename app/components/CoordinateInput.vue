@@ -49,6 +49,10 @@
                     </ColorPicker>
                 </div>
             </div>
+            <div>
+                <label class="block text-sm font-medium mb-2">Kategorie</label>
+                <LocationTypeSelect v-model="locationType" />
+            </div>
         </div>
         <UiButton
             class="md:w-auto"
@@ -72,7 +76,7 @@ import { useLocationFormStore } from "../stores/locationForm"
 
 const coordinatesStore = useCoordinatesStore()
 const locationFormStore = useLocationFormStore()
-const { lat, lng, name, color } = storeToRefs(locationFormStore)
+const { lat, lng, name, color, locationType } = storeToRefs(locationFormStore)
 
 const handleAdd = () => {
     try {
@@ -81,7 +85,7 @@ const handleAdd = () => {
             return
         }
 
-        coordinatesStore.addCoordinate(lat.value, lng.value, name.value || undefined, color.value)
+        coordinatesStore.addCoordinate(lat.value, lng.value, name.value || undefined, color.value, locationType.value)
         toast.success("Standort erfolgreich hinzugefügt")
 
         // Reset form
