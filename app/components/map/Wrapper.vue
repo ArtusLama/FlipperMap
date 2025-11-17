@@ -34,17 +34,16 @@
             <AreaManager />
             <!-- Sub Areas -->
             <AreasOverlay />
-            <LCircleMarker
+            <LMarker
                 v-for="coord in coordinates"
                 :key="coord.id"
                 :lat-lng="[coord.lat, coord.lng]"
-                :radius="8"
-                :color="coord.color"
-                :fill="true"
-                :fill-color="coord.color"
-                :fill-opacity="0.8"
-                :weight="2"
             >
+                <LIcon
+                    v-if="coord.locationType"
+                    :icon-size="[21, 42]"
+                    :icon-url="useLocationTypeIcon().getUrl(coord.locationType)"
+                />
                 <LTooltip
                     :permanent="true"
                     :interactive="false"
@@ -62,7 +61,7 @@
                         <p>{{ coord.lat.toFixed(4) }}, {{ coord.lng.toFixed(4) }}</p>
                     </div>
                 </LPopup>
-            </LCircleMarker>
+            </LMarker>
         </LMap>
     </div>
 </template>
