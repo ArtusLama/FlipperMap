@@ -41,7 +41,7 @@
                                     name="lucide:download"
                                     class="h-4 w-4 mr-2"
                                 />
-                                Alles exportieren
+                                Exportieren
                             </UiButton>
                             <UiButton
                                 variant="default"
@@ -51,7 +51,7 @@
                                     name="lucide:upload"
                                     class="h-4 w-4 mr-2"
                                 />
-                                Alles importieren
+                                Importieren
                             </UiButton>
                         </div>
                         <input

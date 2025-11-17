@@ -119,11 +119,11 @@ export const useSubAreasStore = defineStore("sub-areas", () => {
         const Z_CODE = "Z".charCodeAt(0)
         for (let i = A_CODE; i <= Z_CODE; i++) {
             const letter = String.fromCharCode(i)
-            if (!usedLetters.has(letter)) return `Area ${letter}`
+            if (!usedLetters.has(letter)) return `Gebiet ${letter}`
         }
 
         // fallback to numbered name if all letters are used
-        return `Area ${areas.value.length + 1}`
+        return `Gebiet ${areas.value.length + 1}`
     }
 
     function deleteArea(id: string) {
