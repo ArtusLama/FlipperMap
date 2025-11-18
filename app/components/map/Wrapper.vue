@@ -54,7 +54,7 @@
                     />
                 </LIcon>
 
-                <LTooltip class="">
+                <LTooltip>
                     {{ coord.name }}
                 </LTooltip>
 
@@ -160,6 +160,9 @@ const handleMapClick = (event: { latlng: { lat: number, lng: number } }) => {
     background-color: var(--color-background);
     color: var(--color-foreground);
 }
+.leaflet-popup-tip {
+    background-color: var(--color-background) ;
+}
 
 .leaflet-tooltip {
     background-color: var(--color-background);
@@ -167,6 +170,6 @@ const handleMapClick = (event: { latlng: { lat: number, lng: number } }) => {
     color: var(--color-foreground);
 }
 .leaflet-tooltip::before {
-    border-color: transparent transparent transparent var(--color-background);
+    display: none;
 }
 </style>
