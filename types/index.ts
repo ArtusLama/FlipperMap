@@ -7,5 +7,7 @@ export interface Coordinate {
     color: string
     name?: string
     locationType?: LocationType
+    notes?: string
+    images?: string[]
     createdAt: number
 }

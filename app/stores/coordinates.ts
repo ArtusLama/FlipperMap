@@ -9,6 +9,8 @@ const CoordinateSchema = z.object({
     name: z.string().optional(),
     color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
     locationType: z.enum(["Pflegeheim", "Krankenhaus", "Rettungswache", "Arztpraxis"]).optional(),
+    notes: z.string().optional(),
+    images: z.array(z.string()).optional(),
     createdAt: z.number(),
 })
 
@@ -50,14 +52,19 @@ export const useCoordinatesStore = defineStore("coordinates", () => {
     const updateCoordinate = (id: string, updates: Partial<Omit<Coordinate, "id" | "createdAt">>) => {
         const coordinate = coordinates.value.find(c => c.id === id)
         if (coordinate) {
-            const updated = CoordinateSchema.parse({
-                ...coordinate,
-                ...(updates.lat !== undefined && { lat: updates.lat }),
-                ...(updates.lng !== undefined && { lng: updates.lng }),
-                ...(updates.name !== undefined && { name: updates.name }),
-                ...(updates.color !== undefined && { color: updates.color }),
-                ...(updates.locationType !== undefined && { locationType: updates.locationType }),
-            })
+            // Build updated object with explicit handling for all fields
+            const updatedData: Record<string, any> = { ...coordinate }
+            
+            // Update fields that are provided in updates
+            if ("lat" in updates) updatedData.lat = updates.lat
+            if ("lng" in updates) updatedData.lng = updates.lng
+            if ("name" in updates) updatedData.name = updates.name
+            if ("color" in updates) updatedData.color = updates.color
+            if ("locationType" in updates) updatedData.locationType = updates.locationType
+            if ("notes" in updates) updatedData.notes = updates.notes
+            if ("images" in updates) updatedData.images = updates.images
+            
+            const updated = CoordinateSchema.parse(updatedData)
             Object.assign(coordinate, updated)
         }
     }
